@@ -28,6 +28,11 @@ userSchema.pre('save',  async function (){
     }
 })
 
+//compare password
+userSchema.methods.comparePassword = async function(password) {
+    return bcrypt.compare(password, this.password); 
+}
+
 //json web token [with the help of "methods we can create how many function we want to create"]
 userSchema.methods.generateToken = function() {
     try {

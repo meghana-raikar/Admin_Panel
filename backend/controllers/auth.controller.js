@@ -6,6 +6,9 @@ separating concerns and following the MVC (Model-View-Controller) design pattern
 const User = require("../models/user_model")
 const bcrypt = require("bcryptjs")
 
+// * -------------------------------
+// * home
+// * -------------------------------
 
 const home = async (req, res) => {
   try {
@@ -14,6 +17,10 @@ const home = async (req, res) => {
     console.log(error);
   }
 };
+
+// * -------------------------------
+// * register
+// * -------------------------------
 
 const register = async (req, res) => {
   try {
@@ -30,7 +37,7 @@ const register = async (req, res) => {
     // const hash_password = await bcrypt.hash(password, salthRound)
 
     const userCreated = await User.create({ username, email, phone, password });
-      res.status(201).json({msg : userCreated, token: await userCreated.generateToken(), userId: userCreated._id.toString()});
+      res.status(201).json({msg : "registration successfull", token: await userCreated.generateToken(), userId: userCreated._id.toString()});
 
   } catch (error) {
       res.status(500).json("registration failed");
@@ -38,7 +45,42 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = {home, register};
+// * -------------------------------
+// * login
+// * -------------------------------
+
+  const login = async (req, res) => {
+      try {
+        const {email, password} = req.body;
+
+        const userExist = await User.findOne({email});
+
+        if(!userExist) {
+          return res.status(400).json({message: "Invaild credentials"}) //if user doesnt exist
+        }
+
+        // const isUserPresent = await bcrypt.compare(password, userExist.password ); 
+
+        const isUserPresent = await userExist.comparePassword(password);
+
+        if(isUserPresent) {
+          res.status(201).json({
+                    msg: "registration successfull",
+                    token: await userExist.generateToken(),
+                    userId: userExist._id.toString(),
+                  });
+        }else {
+          res.status(401).json({message: "Invaild email or password"})
+        }
+
+
+      } catch (error) {
+        // res.status(500).json("registration failed");
+        next(error);
+      }
+  }
+
+module.exports = {home, register, login};
 
 /*
 In most cases, converting _ id to a string is a good practice because it ensures consistency
